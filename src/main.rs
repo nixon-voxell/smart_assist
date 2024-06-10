@@ -48,7 +48,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     border_color: BorderColor(OFF_BUTTON_COLOR),
                     ..default()
                 })
-                .insert(ButtonState { is_on: false, original_color: OFF_BUTTON_COLOR })
+                .insert(ButtonState {
+                    is_on: false,
+                    original_color: OFF_BUTTON_COLOR,
+                })
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
                         "Off",
@@ -65,11 +68,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn darken_color(color: Color, factor: f32) -> Color {
     let [r, g, b, a] = color.as_rgba_f32();
     Color::rgba(
-      (r - factor).max(0.0),
-      (g - factor).max(0.0),
-      (b - factor).max(0.0),
-      a,
-  )
+        (r - factor).max(0.0),
+        (g - factor).max(0.0),
+        (b - factor).max(0.0),
+        a,
+    )
 }
 
 fn switch_logic(
