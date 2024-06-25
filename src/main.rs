@@ -1,11 +1,13 @@
-use bevy::{prelude::*, winit::WinitSettings};
+use bevy::{math::DVec2, prelude::*, ui::FocusPolicy, winit::WinitSettings};
+use bevy_vello_graphics::prelude::*;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(VelloGraphicsPlugin)
         .insert_resource(WinitSettings::desktop_app()) // Only run the app when there is user input. This will significantly reduce CPU/GPU use.
         .add_systems(Startup, setup)
-        .add_systems(Update, switch_logic)
+        // .add_systems(Update, switch_logic)
         .run()
 }
 
@@ -16,6 +18,69 @@ const ON_BUTTON_COLOR: Color = Color::GREEN;
 struct ButtonState {
     is_on: bool,
     original_color: Color,
+}
+
+#[derive(Bundle, Clone, Debug)]
+pub struct VelloButtonBundle {
+    /// Describes the logical size of the node
+    pub node: Node,
+    /// Marker component that signals this node is a button
+    pub button: Button,
+    /// Styles which control the layout (size and position) of the node and it's children
+    /// In some cases these styles also affect how the node drawn/painted.
+    pub style: Style,
+    pub vello_rect: VelloRect,
+    /// Describes whether and how the button has been interacted with by the input
+    pub interaction: Interaction,
+    /// Whether this node should block interaction with lower nodes
+    pub focus_policy: FocusPolicy,
+    /// The background color, which serves as a "fill" for this node
+    ///
+    /// When combined with `UiImage`, tints the provided image.
+    pub background_color: BackgroundColor,
+    /// The color of the Node's border
+    pub border_color: BorderColor,
+    /// The image of the node
+    pub image: UiImage,
+    /// The transform of the node
+    ///
+    /// This component is automatically managed by the UI layout system.
+    /// To alter the position of the `ButtonBundle`, use the properties of the [`Style`] component.
+    pub transform: Transform,
+    /// The global transform of the node
+    ///
+    /// This component is automatically updated by the [`TransformPropagate`](`bevy_transform::TransformSystem::TransformPropagate`) systems.
+    pub global_transform: GlobalTransform,
+    /// Describes the visibility properties of the node
+    pub visibility: Visibility,
+    /// Inherited visibility of an entity.
+    pub inherited_visibility: InheritedVisibility,
+    /// Algorithmically-computed indication of whether an entity is visible and should be extracted for rendering
+    pub view_visibility: ViewVisibility,
+    /// Indicates the depth at which the node should appear in the UI
+    pub z_index: ZIndex,
+}
+
+impl Default for VelloButtonBundle {
+    fn default() -> Self {
+        Self {
+            focus_policy: FocusPolicy::Block,
+            node: Default::default(),
+            button: Default::default(),
+            style: Default::default(),
+            vello_rect: Default::default(),
+            border_color: BorderColor(Color::NONE),
+            interaction: Default::default(),
+            background_color: Default::default(),
+            image: Default::default(),
+            transform: Default::default(),
+            global_transform: Default::default(),
+            visibility: Default::default(),
+            inherited_visibility: Default::default(),
+            view_visibility: Default::default(),
+            z_index: Default::default(),
+        }
+    }
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -33,19 +98,25 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         })
         .with_children(|parent| {
+            parent.spawn((
+                VelloSceneBundle::default(),
+            ));
             parent
-                .spawn(ButtonBundle {
+                .spawn(VelloButtonBundle {
                     style: Style {
                         width: Val::Px(150.0),
                         height: Val::Px(65.0),
-                        border: UiRect::all(Val::Px(5.0)),
+                        // border: UiRect::all(Val::Px(5.0)),
                         // horizontally center child text
                         justify_content: JustifyContent::Center,
                         // vertically center child text
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    border_color: BorderColor(OFF_BUTTON_COLOR),
+                    vello_rect: VelloRect { // not showing rect
+                        size: DVec2::new(100.0, 200.0),
+                        ..default()
+                    },
                     ..default()
                 })
                 .insert(ButtonState {
